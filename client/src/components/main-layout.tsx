@@ -108,22 +108,22 @@ export default function MainLayout({ children, title, currentPage = "home", curr
         {/* Sidebar */}
         <aside className="w-48 border-r p-4 bg-white">
           <nav className="space-y-2">
-            <Link href="/dashboard" className={`flex items-center p-2 rounded-md text-sm font-medium ${currentPage === "home" ? "text-gray-900 bg-gray-100" : "text-gray-600 hover:bg-gray-100"}`}>
+            <a href="/dashboard" className={`flex items-center p-2 rounded-md text-sm font-medium ${currentPage === "home" ? "text-gray-900 bg-gray-100" : "text-gray-600 hover:bg-gray-100"}`}>
               <Home className="h-5 w-5 mr-2 text-gray-500" />
               Home
-            </Link>
-            <Link href="/my-library" className={`flex items-center p-2 rounded-md text-sm font-medium ${currentPage === "library" ? "text-gray-900 bg-gray-100" : "text-gray-600 hover:bg-gray-100"}`}>
+            </a>
+            <a href="/my-library" className={`flex items-center p-2 rounded-md text-sm font-medium ${currentPage === "library" ? "text-gray-900 bg-gray-100" : "text-gray-600 hover:bg-gray-100"}`}>
               <Book className="h-5 w-5 mr-2 text-gray-500" />
               My Library
-            </Link>
-            <Link href="/videos" className={`flex items-center p-2 rounded-md text-sm font-medium ${currentPage === "video" ? "text-gray-900 bg-gray-100" : "text-gray-600 hover:bg-gray-100"}`}>
+            </a>
+            <a href="/videos" className={`flex items-center p-2 rounded-md text-sm font-medium ${currentPage === "video" ? "text-gray-900 bg-gray-100" : "text-gray-600 hover:bg-gray-100"}`}>
               <Video className="h-5 w-5 mr-2 text-gray-500" />
               Video
-            </Link>
-            <Link href="/documents" className={`flex items-center p-2 rounded-md text-sm font-medium ${currentPage === "document" ? "text-gray-900 bg-gray-100" : "text-gray-600 hover:bg-gray-100"}`}>
+            </a>
+            <a href="/documents" className={`flex items-center p-2 rounded-md text-sm font-medium ${currentPage === "document" ? "text-gray-900 bg-gray-100" : "text-gray-600 hover:bg-gray-100"}`}>
               <FileText className="h-5 w-5 mr-2 text-gray-500" />
               Document
-            </Link>
+            </a>
           </nav>
         </aside>
 
