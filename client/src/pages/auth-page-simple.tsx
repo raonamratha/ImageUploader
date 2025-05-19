@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLocation } from "wouter";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -16,7 +16,6 @@ import { Button } from "@/components/ui/button";
 import CountrySelector from "@/components/country-selector";
 import LanguageSelector from "@/components/language-selector";
 import { Phone, Mail } from "lucide-react";
-import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { Helmet } from "react-helmet";
 
@@ -30,17 +29,9 @@ type LoginValues = z.infer<typeof loginSchema>;
 export default function AuthPageSimple() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const { user, loginMutation } = useAuth();
   const [country, setCountry] = useState("india");
   const [language, setLanguage] = useState("english");
   const [isLoading, setIsLoading] = useState(false);
-
-  // Redirect to dashboard if user is already logged in
-  useEffect(() => {
-    if (user) {
-      setLocation("/dashboard");
-    }
-  }, [user, setLocation]);
 
   const form = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
@@ -53,16 +44,29 @@ export default function AuthPageSimple() {
   const onSubmit = async (data: LoginValues) => {
     setIsLoading(true);
     try {
-      await loginMutation.mutateAsync({
-        username: data.teacherCode,
-        password: data.password,
-      });
-      
-      // Redirect to dashboard on success
-      setLocation("/dashboard");
+      // Hardcoded check for demo - in a real app this would be an API call
+      if (data.teacherCode === "teacher123" && data.password === "password123") {
+        toast({
+          title: "Login successful",
+          description: "Welcome to The Art of Living teacher portal!",
+        });
+        
+        // Redirect to dashboard on success
+        setLocation("/dashboard");
+      } else {
+        toast({
+          title: "Login failed",
+          description: "Invalid teacher code or password",
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       console.error("Login error:", error);
-      // Error toast is handled in the loginMutation onError callback
+      toast({
+        title: "Login failed",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
