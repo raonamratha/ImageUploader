@@ -38,6 +38,30 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ title, artist }) => {
   
   const audioRef = useRef<HTMLAudioElement>(null);
   
+  // Add event listener for the space key to toggle play/pause
+  useEffect(() => {
+    const handleSpaceKey = (e: KeyboardEvent) => {
+      if (e.code === 'Space' && e.target === document.body) {
+        e.preventDefault(); // Prevent page scrolling
+        togglePlay();
+      }
+    };
+    
+    window.addEventListener('keydown', handleSpaceKey);
+    return () => window.removeEventListener('keydown', handleSpaceKey);
+  }, [isPlaying]);
+  
+  // Effect to update time display
+  useEffect(() => {
+    const audioElement = audioRef.current;
+    if (!audioElement) return;
+    
+    const updateTime = () => setCurrentTime(audioElement.currentTime);
+    audioElement.addEventListener('timeupdate', updateTime);
+    
+    return () => audioElement.removeEventListener('timeupdate', updateTime);
+  }, []);
+  
   const togglePlay = () => {
     if (audioRef.current) {
       if (isPlaying) {
@@ -109,36 +133,36 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ title, artist }) => {
       </div>
       
       <div className="flex items-center space-x-4 ml-4">
-        <button className="p-1 rounded-full">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <button className="p-1 rounded-full hover:bg-gray-100">
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
         </button>
         
         <button 
           onClick={togglePlay}
-          className="p-2 bg-purple-600 rounded-full text-white"
+          className="p-3 bg-purple-600 hover:bg-purple-700 rounded-full text-white"
         >
           {isPlaying ? (
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 9v6m4-6v6" />
             </svg>
           ) : (
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
             </svg>
           )}
         </button>
         
-        <button className="p-1 rounded-full">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <button className="p-1 rounded-full hover:bg-gray-100">
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </button>
       </div>
       
-      <div className="flex items-center ml-4 space-x-2">
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="flex items-center ml-6 space-x-3">
+        <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072M12 9.5l0 5M12 9.5a3 3 0 013 3V15m-6-5.5v.75m0 0v.75m0-.75h-.375m0 0H9" />
         </svg>
         
@@ -148,7 +172,12 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ title, artist }) => {
           max={100}
           value={volume}
           onChange={handleVolumeChange}
-          className="w-20 h-1 bg-gray-300 rounded-lg appearance-none cursor-pointer range-sm"
+          className="w-24 h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer"
+          style={{
+            background: `linear-gradient(to right, #9333ea ${volume}%, #e9d5ff ${volume}%)`,
+            height: '6px',
+            borderRadius: '4px'
+          }}
         />
       </div>
       
