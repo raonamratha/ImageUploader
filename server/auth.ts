@@ -1,15 +1,21 @@
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
-import { Express } from "express";
+import { Express, Request } from "express";
 import session from "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage";
-import { User } from "@shared/schema";
+import { type User } from "@shared/schema";
 
+// Fix Express type declarations
 declare global {
   namespace Express {
-    interface User extends User {}
+    // Extend the User interface without self-reference
+    interface User {
+      id: number;
+      username: string;
+      // Omit password from type for security
+    }
   }
 }
 
@@ -29,35 +35,21 @@ async function comparePasswords(supplied: string, stored: string) {
 }
 
 export async function setupAuth(app: Express) {
-  if (!process.env.SESSION_SECRET) {
-    process.env.SESSION_SECRET = randomBytes(32).toString("hex");
-    console.warn("No SESSION_SECRET environment variable set, using a random value");
-  }
-
   const sessionSettings: session.SessionOptions = {
-    secret: process.env.SESSION_SECRET,
+    secret: process.env.SESSION_SECRET || "keyboard cat",
     resave: false,
     saveUninitialized: false,
-    cookie: {
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    },
     store: storage.sessionStore,
+    cookie: {
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
   };
 
   app.set("trust proxy", 1);
   app.use(session(sessionSettings));
   app.use(passport.initialize());
   app.use(passport.session());
-
-  // Seed initial teacher account if none exists
-  const adminUser = await storage.getUserByUsername("teacher123");
-  if (!adminUser) {
-    await storage.createUser({
-      username: "teacher123",
-      password: await hashPassword("password123"),
-    });
-    console.log("Created default teacher account: teacher123 / password123");
-  }
 
   passport.use(
     new LocalStrategy(async (username, password, done) => {
@@ -68,37 +60,56 @@ export async function setupAuth(app: Express) {
         } else {
           return done(null, user);
         }
-      } catch (error) {
-        return done(error);
+      } catch (err) {
+        return done(err);
       }
     }),
   );
 
-  passport.serializeUser((user, done) => done(null, user.id));
+  // Type safety for serialization
+  passport.serializeUser((user, done) => {
+    const typedUser = user as User;
+    return done(null, typedUser.id);
+  });
   
   passport.deserializeUser(async (id: number, done) => {
     try {
       const user = await storage.getUser(id);
       done(null, user);
-    } catch (error) {
-      done(error);
+    } catch (err) {
+      done(err);
     }
   });
 
-  // Auth routes
+  app.post("/api/register", async (req, res, next) => {
+    try {
+      const existingUser = await storage.getUserByUsername(req.body.username);
+      if (existingUser) {
+        return res.status(400).json({ message: "Username already exists" });
+      }
+
+      const user = await storage.createUser({
+        ...req.body,
+        password: await hashPassword(req.body.password),
+      });
+
+      req.login(user, (err) => {
+        if (err) return next(err);
+        res.status(201).json(user);
+      });
+    } catch (err) {
+      next(err);
+    }
+  });
+
   app.post("/api/login", (req, res, next) => {
-    passport.authenticate("local", (err: Error, user: User) => {
-      if (err) {
-        return next(err);
-      }
-      if (!user) {
-        return res.status(401).json({ message: "Invalid teacher code or password" });
-      }
-      req.login(user, (loginErr) => {
-        if (loginErr) {
-          return next(loginErr);
-        }
-        return res.status(200).json(user);
+    passport.authenticate("local", (err: Error | null, user: User | false) => {
+      if (err) return next(err);
+      if (!user) return res.status(401).json({ message: "Invalid credentials" });
+      
+      req.login(user, (err) => {
+        if (err) return next(err);
+        res.status(200).json(user);
       });
     })(req, res, next);
   });
@@ -111,29 +122,7 @@ export async function setupAuth(app: Express) {
   });
 
   app.get("/api/user", (req, res) => {
-    if (!req.isAuthenticated()) {
-      return res.status(401).json({ message: "Not authenticated" });
-    }
+    if (!req.isAuthenticated()) return res.sendStatus(401);
     res.json(req.user);
-  });
-
-  // Password reset functionality (simulated)
-  app.post("/api/reset-password", async (req, res) => {
-    const { teacherCode, email } = req.body;
-
-    if (!teacherCode || !email) {
-      return res.status(400).json({ message: "Teacher code and email are required" });
-    }
-
-    // In a real application, you would:
-    // 1. Verify the teacher code exists in the database
-    // 2. Verify the email matches the teacher's email
-    // 3. Generate a reset token and store it with an expiry
-    // 4. Send an email with a reset link
-
-    // For this simulation, we'll just return a success response
-    setTimeout(() => {
-      res.status(200).json({ message: "Password reset email sent" });
-    }, 1000);
   });
 }
