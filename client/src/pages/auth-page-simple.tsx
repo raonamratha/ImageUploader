@@ -51,8 +51,8 @@ export default function AuthPageSimple() {
           description: "Welcome to The Art of Living teacher portal!",
         });
         
-        // Redirect to dashboard on success
-        setLocation("/dashboard");
+        // Redirect to dashboard on success using window.location
+        window.location.href = "/dashboard";
       } else {
         toast({
           title: "Login failed",
