@@ -102,7 +102,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ title, artist }) => {
   );
 };
 
-export default function HomePage() {
+export default function LibraryPage() {
   const [currentAudio, setCurrentAudio] = useState({
     title: "Short Sudarshan Kriya",
     artist: "Sri Sri Ravi Shankar"
@@ -123,49 +123,21 @@ export default function HomePage() {
     window.location.href = path;
   };
 
-  // Sample data for videos
-  const happinessCourseVideos = [
+  // Sample data for personal playlists
+  const personalPlaylists = [
     {
       id: 1,
-      title: "Long Sudarshan Kriya",
+      title: "Playlist-1",
       thumbnail: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&q=80&w=500",
     },
     {
       id: 2,
-      title: "Aura Meditation",
+      title: "Personal Kriya Mix",
       thumbnail: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&q=80&w=500",
     },
     {
       id: 3,
-      title: "Short Sudarshan Kriya",
-      thumbnail: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&q=80&w=500",
-    },
-  ];
-
-  const advanceMeditationVideos = [
-    {
-      id: 4,
-      title: "Online AMP - 3Days",
-      thumbnail: "https://images.unsplash.com/photo-1465101162946-4377e57745c3?auto=format&fit=crop&q=80&w=500",
-    },
-    {
-      id: 5,
-      title: "AMP - 4 Days",
-      thumbnail: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&q=80&w=500",
-    },
-    {
-      id: 6,
-      title: "AMP - 5 Days",
-      thumbnail: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&q=80&w=500",
-    },
-    {
-      id: 7,
-      title: "AMP - 7 Days",
-      thumbnail: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&q=80&w=500",
-    },
-    {
-      id: 8,
-      title: "AMP - Busy Bee",
+      title: "My Happiness Course Mix",
       thumbnail: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&q=80&w=500",
     },
   ];
@@ -173,10 +145,10 @@ export default function HomePage() {
   return (
     <>
       <Helmet>
-        <title>Home | The Art of Living</title>
+        <title>My Library | The Art of Living</title>
         <meta 
           name="description" 
-          content="Access The Art of Living teacher resources, meditation videos, and courses." 
+          content="Access your personal playlists in The Art of Living teacher portal." 
         />
       </Helmet>
 
@@ -204,14 +176,14 @@ export default function HomePage() {
           {/* Sidebar */}
           <aside className="w-48 border-r p-4 bg-white">
             <nav className="space-y-2">
-              <button onClick={() => {}} className="flex w-full items-center p-2 rounded-md text-sm font-medium text-gray-900 bg-gray-100">
+              <button onClick={() => navigateTo("/dashboard")} className="flex w-full items-center p-2 rounded-md text-sm font-medium text-gray-600 hover:bg-gray-100">
                 <svg className="h-5 w-5 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                 </svg>
                 Home
               </button>
               
-              <button onClick={() => navigateTo("/my-library")} className="flex w-full items-center p-2 rounded-md text-sm font-medium text-gray-600 hover:bg-gray-100">
+              <button onClick={() => {}} className="flex w-full items-center p-2 rounded-md text-sm font-medium text-gray-900 bg-gray-100">
                 <svg className="h-5 w-5 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                 </svg>
@@ -248,40 +220,17 @@ export default function HomePage() {
               </svg>
             </div>
 
-            {/* Happiness Course */}
-            <h2 className="text-xl font-semibold mb-4">Happiness Course</h2>
+            {/* Personal Playlists */}
+            <h2 className="text-xl font-semibold mb-4">Personal Playlists</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-8">
-              {happinessCourseVideos.map(video => (
+              {personalPlaylists.map(playlist => (
                 <VideoCard 
-                  key={video.id}
-                  title={video.title}
-                  thumbnail={video.thumbnail}
-                  onClick={() => playVideo(video.title)}
+                  key={playlist.id}
+                  title={playlist.title}
+                  thumbnail={playlist.thumbnail}
+                  onClick={() => playVideo(playlist.title)}
                 />
               ))}
-            </div>
-
-            {/* Advanced Meditation Program */}
-            <h2 className="text-xl font-semibold mb-4">Advance Meditation Program</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-8">
-              {advanceMeditationVideos.map(video => (
-                <VideoCard 
-                  key={video.id}
-                  title={video.title}
-                  thumbnail={video.thumbnail}
-                  onClick={() => playVideo(video.title)}
-                />
-              ))}
-            </div>
-
-            {/* More Advance Meditation Program */}
-            <h2 className="text-xl font-semibold mb-4">Advance Meditation Program</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {/* Placeholder for future content */}
-              <div className="h-40 bg-gray-200 rounded-md"></div>
-              <div className="h-40 bg-gray-200 rounded-md"></div>
-              <div className="h-40 bg-gray-200 rounded-md"></div>
-              <div className="h-40 bg-gray-200 rounded-md"></div>
             </div>
           </main>
         </div>
