@@ -1,11 +1,7 @@
-import React, { useState } from "react";
-import { useAuth } from "@/hooks/use-auth";
+import React, { useState, useRef, useEffect } from "react";
 import { Helmet } from "react-helmet";
-import { Search, Home, Book, Video, FileText, User } from "lucide-react";
+import { Search, Home, Book, Video, FileText } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import AudioPlayer from "@/components/audio-player";
-import { Link, useLocation } from "wouter";
 
 // Video Card Component
 interface VideoCardProps {
@@ -18,9 +14,9 @@ const VideoCard: React.FC<VideoCardProps> = ({ title, thumbnail, onClick }) => (
   <div className="flex flex-col cursor-pointer" onClick={onClick}>
     <div className="relative rounded-md overflow-hidden mb-2 group">
       <img src={thumbnail} alt={title} className="w-full h-40 object-cover" />
-      <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 group-hover:bg-opacity-40 transition-all">
+      <div className="absolute inset-0 flex items-center justify-center">
         <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center">
-          <div className="w-0 h-0 border-t-8 border-b-8 border-l-12 ml-1 border-transparent border-l-indigo-600" />
+          <div className="w-0 h-0 border-y-8 border-y-transparent border-l-[12px] border-l-gray-700 ml-1" />
         </div>
       </div>
     </div>
@@ -28,13 +24,149 @@ const VideoCard: React.FC<VideoCardProps> = ({ title, thumbnail, onClick }) => (
   </div>
 );
 
+// Audio Player Component
+interface AudioPlayerProps {
+  title: string;
+  artist: string;
+}
+
+const AudioPlayer: React.FC<AudioPlayerProps> = ({ title, artist }) => {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(820); // 13:40 in seconds
+  const [volume, setVolume] = useState(75);
+  
+  const audioRef = useRef<HTMLAudioElement>(null);
+  
+  const togglePlay = () => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play().catch(err => console.error("Playback failed:", err));
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+  
+  const handleTimeUpdate = () => {
+    if (audioRef.current) {
+      setCurrentTime(audioRef.current.currentTime);
+    }
+  };
+  
+  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newTime = parseInt(e.target.value);
+    setCurrentTime(newTime);
+    if (audioRef.current) {
+      audioRef.current.currentTime = newTime;
+    }
+  };
+  
+  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newVolume = parseInt(e.target.value);
+    setVolume(newVolume);
+    if (audioRef.current) {
+      audioRef.current.volume = newVolume / 100;
+    }
+  };
+  
+  const formatTime = (time: number) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  };
+  
+  return (
+    <div className="flex items-center bg-white p-3">
+      <div className="flex-shrink-0 mr-4">
+        <div className="h-14 w-14 bg-gray-300 rounded-md flex items-center justify-center">
+          {/* Album art placeholder */}
+          <div className="text-2xl font-bold text-gray-600">{title[0]}</div>
+        </div>
+      </div>
+      
+      <div className="flex-grow">
+        <div className="mb-1">
+          <h3 className="text-sm font-medium">{title}</h3>
+          <p className="text-xs text-gray-500">{artist}</p>
+        </div>
+        
+        <div className="flex items-center space-x-2">
+          <span className="text-xs text-gray-500">{formatTime(currentTime)}</span>
+          <div className="flex-grow">
+            <input
+              type="range"
+              min={0}
+              max={duration}
+              value={currentTime}
+              onChange={handleSeek}
+              className="w-full h-1 bg-gray-300 rounded-lg appearance-none cursor-pointer range-sm"
+            />
+          </div>
+          <span className="text-xs text-gray-500">{formatTime(duration)}</span>
+        </div>
+      </div>
+      
+      <div className="flex items-center space-x-4 ml-4">
+        <button className="p-1 rounded-full">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        
+        <button 
+          onClick={togglePlay}
+          className="p-2 bg-purple-600 rounded-full text-white"
+        >
+          {isPlaying ? (
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 9v6m4-6v6" />
+            </svg>
+          ) : (
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+            </svg>
+          )}
+        </button>
+        
+        <button className="p-1 rounded-full">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      </div>
+      
+      <div className="flex items-center ml-4 space-x-2">
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072M12 9.5l0 5M12 9.5a3 3 0 013 3V15m-6-5.5v.75m0 0v.75m0-.75h-.375m0 0H9" />
+        </svg>
+        
+        <input
+          type="range"
+          min={0}
+          max={100}
+          value={volume}
+          onChange={handleVolumeChange}
+          className="w-20 h-1 bg-gray-300 rounded-lg appearance-none cursor-pointer range-sm"
+        />
+      </div>
+      
+      <audio 
+        ref={audioRef}
+        src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" 
+        onTimeUpdate={handleTimeUpdate}
+        onLoadedMetadata={() => audioRef.current && setDuration(audioRef.current.duration)}
+      />
+    </div>
+  );
+};
+
 // Main Dashboard Component
-export default function DashboardPage() {
-  const { user } = useAuth();
+export default function TeacherDashboard() {
   const [currentAudio, setCurrentAudio] = useState({
     title: "Short Sudarshan Kriya",
-    artist: "Sri Sri Ravi Shankar",
-    audioSrc: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" // Sample audio
+    artist: "Sri Sri Ravi Shankar"
   });
   
   // Function to handle video clicks
@@ -43,8 +175,7 @@ export default function DashboardPage() {
     // In a real app, this would open the video player or change the current media
     setCurrentAudio({
       title,
-      artist: "Sri Sri Ravi Shankar",
-      audioSrc: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
+      artist: "Sri Sri Ravi Shankar"
     });
   };
 
@@ -111,16 +242,16 @@ export default function DashboardPage() {
           <div className="container mx-auto flex justify-between items-center">
             <div className="flex items-center">
               <img 
-                src="https://www.artofliving.org/sites/www.artofliving.org/files/styles/original_image/public/vyakti-vikas-kendra-india.png?itok=VJFmnz2D" 
+                src="https://www.artofliving.org/sites/all/themes/custom/aol/logo.png" 
                 alt="Art of Living Logo" 
-                className="h-10 mr-3"
+                className="h-12 mr-3"
               />
               <h1 className="text-xl font-bold">Teacher Resources</h1>
             </div>
             <nav className="flex space-x-6">
-              <a href="#" className="text-sm font-medium hover:text-indigo-600">FAQ</a>
-              <a href="#" className="text-sm font-medium hover:text-indigo-600">About Us</a>
-              <a href="#" className="text-sm font-medium hover:text-indigo-600">Contact Us</a>
+              <a href="#" className="text-sm font-medium hover:text-primary">FAQ</a>
+              <a href="#" className="text-sm font-medium hover:text-primary">About Us</a>
+              <a href="#" className="text-sm font-medium hover:text-primary">Contact Us</a>
             </nav>
           </div>
         </header>
@@ -205,11 +336,10 @@ export default function DashboardPage() {
         </div>
 
         {/* Audio Player Footer */}
-        <footer className="border-t p-2 bg-white">
+        <footer className="border-t bg-white">
           <AudioPlayer
             title={currentAudio.title}
             artist={currentAudio.artist}
-            audioSrc={currentAudio.audioSrc}
           />
         </footer>
       </div>
